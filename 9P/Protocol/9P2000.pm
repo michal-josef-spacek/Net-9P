@@ -4,6 +4,12 @@ use strict;
 use warnings;
 
 use Class::Utils qw(set_params);
+use Data::9P::Message::Rerror;
+use Data::9P::Message::Rversion;
+use Data::9P::Message::Tread;
+use Data::9P::Message::Tversion;
+use Data::9P::Message::Twalk;
+use Data::9P::Message::Twrite;
 use Error::Pure qw(err);
 use Readonly;
 use Scalar::Util qw(blessed);
@@ -74,7 +80,21 @@ sub new {
 sub decode {
 	my ($self, $bytes) = @_;
 
-	# TODO
+	my ($size, $type, $tag) = unpack('V C v', substr($bytes, 0, 7));
+
+	if (! exists $TYPE{$type}) {
+		err "Unknown message type '$type'.";
+	}
+
+	my $payload = substr($bytes, 7);
+
+	my $msg_ref = $TYPE{$type};
+	my $msg_class = lc((split m/:/ms, $msg_ref)[-1]);
+	my $method = '_decode_'.$msg_class;
+
+	my $msg = $self->$method($tag, $payload);
+
+	return $msg;
 }
 
 sub encode {
@@ -96,6 +116,151 @@ sub encode {
 	my $size = 7 + length $payload;
 
 	return pack('V C v', $size, $type, $msg->tag).$payload;
+}
+
+sub _dec_str {
+	my ($self, $bytes_sr) = @_;
+
+	# TODO Check.
+
+	if (length(${$bytes_sr}) < 2) {
+		err 'Payload too short for string length.';
+	}
+	my ($len) = unpack('v', substr(${$bytes_sr}, 0, 2, ''));
+	if (length(${$bytes_sr}) < $len) {
+		err 'Payload too short for string content.';
+	}
+	my $str = substr(${$bytes_sr}, 0, $len, '');
+
+	return $str;
+}
+
+sub _decode_rerror {
+	my ($self, $tag, $payload) = @_;
+
+	my $buf = $payload;
+	my $ename = $self->_dec_str(\$buf);
+	if (length($buf)) {
+		err 'Trailing bytes in Rerror.';
+	}
+
+	return Data::9P::Message::Rerror->new(
+		'tag' => $tag,
+		'ename' => $ename,
+	);
+}
+
+sub _decode_rversion {
+	my ($self, $tag, $payload) = @_;
+
+	my $buf = $payload;
+	if (length($buf) < 4) {
+		err 'Payload too short for msize.';
+	}
+	my ($msize) = unpack('V', substr($buf, 0, 4, ''));
+	my $version = $self->_dec_str(\$buf);
+	if (length($buf)) {
+		err 'Trailing bytes in Rversion.';
+	}
+
+	return Data::9P::Message::Rversion->new(
+		'msize' => $msize,
+		'tag' => $tag,
+		'version' => $version,
+	);
+}
+
+sub _decode_tread {
+	my ($self, $tag, $payload) = @_;
+
+	my $buf = $payload;
+	if (length($buf) < 16) {
+		err 'Payload too short for Tread.';
+	}
+	my ($fid) = unpack('V',  substr($buf, 0, 4, ''));
+	my ($offset) = unpack('Q<', substr($buf, 0, 8, ''));
+	my ($count) = unpack('V',  substr($buf, 0, 4, ''));
+	if (length($buf)) {
+		err 'Trailing bytes in Tversion.';
+	}
+	return Data::9P::Message::Tread->new(
+		'count' => $count,
+		'fid' => $fid,
+		'offset' => $offset,
+		'tag' => $tag,
+	);
+}
+
+sub _decode_tversion {
+	my ($self, $tag, $payload) = @_;
+
+	my $buf = $payload;
+	if (length($buf) < 4) {
+		err 'Payload too short for msize.';
+	}
+	my ($msize) = unpack('V', substr($buf, 0, 4, ''));
+	my $version = $self->_dec_str(\$buf);
+	if (length($buf)) {
+		err 'Trailing bytes in Tversion.';
+	}
+
+	return Data::9P::Message::Tversion->new(
+		'msize' => $msize,
+		'tag' => $tag,
+		'version' => $version,
+	);
+}
+
+sub _decode_twalk {
+	my ($self, $tag, $payload) = @_;
+
+	my $buf = $payload;
+	if (length($buf) < 10) {
+		err 'Payload too short for Twalk header.';
+	}
+	my ($fid) = unpack('V', substr($buf, 0, 4, ''));
+	my ($newfid) = unpack('V', substr($buf, 0, 4, ''));
+	my ($nwname) = unpack('v', substr($buf, 0, 2, ''));
+	my @wnames;
+	foreach (1 .. $nwname) {
+		push @wnames, $self->_dec_str(\$buf);
+	}
+	if (length($buf)) {
+		err 'Trailing bytes in Twalk.';
+	}
+
+	return Data::9P::Message::Twalk->new(
+		'fid' => $fid,
+		'newfid' => $newfid,
+		'tag' => $tag,
+		'wnames' => \@wnames,
+	);
+}
+
+sub _decode_twrite {
+	my ($self, $tag, $payload) = @_;
+
+	my $buf = $payload;
+	if (length($buf) < 16) {
+		err 'Payload too short for Twrite header.';
+	}
+	my ($fid) = unpack('V',  substr($buf, 0, 4, ''));
+	my ($offset) = unpack('Q<', substr($buf, 0, 8, ''));
+	my ($count) = unpack('V',  substr($buf, 0, 4, ''));
+	if (length($buf) < $count) {
+		err 'Payload too short for Twrite data.';
+	}
+	my $data = substr($buf, 0, $count, '');
+	if (length($buf)) {
+		err 'Trailing bytes in Twrite.';
+	}
+
+	return Data::9P::Message::Twrite->new(
+		'data' => $data,
+		'fid' => $fid,
+		'offset' => $offset,
+		'tag' => $tag,
+	);
 }
 
 sub _enc_str {

@@ -30,6 +30,12 @@ no_index:
     - xt
 requires:
   Class::Utils: 0
+  Data::9P::Message::Rerror: 0
+  Data::9P::Message::Rversion: 0
+  Data::9P::Message::Tread: 0
+  Data::9P::Message::Tversion: 0
+  Data::9P::Message::Twalk: 0
+  Data::9P::Message::Twrite: 0
   Error::Pure: 0
   Readonly: 0
   Scalar::Util: 0

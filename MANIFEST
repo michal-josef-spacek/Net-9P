@@ -21,7 +21,8 @@ README
 t/Net-9P-Protocol-9P2000/01-use.t
 t/Net-9P-Protocol-9P2000/02-version.t
 t/Net-9P-Protocol-9P2000/03-new.t
-t/Net-9P-Protocol-9P2000/04-encode.t
+t/Net-9P-Protocol-9P2000/04-decode.t
+t/Net-9P-Protocol-9P2000/05-encode.t
 t/Net-9P/01-use.t
 t/Net-9P/02-version.t
 xt/Net-9P-Protocol-9P2000/01-pod_coverage.t
