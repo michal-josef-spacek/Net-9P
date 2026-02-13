@@ -3,6 +3,7 @@ abstract: 'Handle 9 protocol.'
 author:
   - 'Michal Josef Spacek <skim@cpan.org>'
 build_requires:
+  Check::Socket: 0.03
   Data::9P::Message::Rerror: 0
   Data::9P::Message::Rversion: 0
   Data::9P::Message::Tread: 0
@@ -10,7 +11,11 @@ build_requires:
   Data::9P::Message::Twalk: 0
   Data::9P::Message::Twrite: 0
   ExtUtils::MakeMaker: 6.59
+  IO::Handle: 0
+  IO::Socket: 0
   Math::BigInt: 0
+  Socket: 0
+  Test::MockObject: 0
   Test::More: 0
   Test::NoWarnings: 0
 configure_requires:
@@ -36,7 +41,9 @@ requires:
   Data::9P::Message::Tversion: 0
   Data::9P::Message::Twalk: 0
   Data::9P::Message::Twrite: 0
+  English: 0
   Error::Pure: 0
+  Mo::utils: 0.08
   Readonly: 0
   Scalar::Util: 0
   perl: 5.8.0

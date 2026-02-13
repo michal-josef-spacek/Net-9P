@@ -1,4 +1,5 @@
 9P.pm
+9P/Connection.pm
 9P/Protocol/9P2000.pm
 Changes
 CONCEPT
@@ -18,6 +19,11 @@ Makefile.PL
 MANIFEST			This list of files
 META.yml
 README
+t/Net-9P-Connection/01-use.t
+t/Net-9P-Connection/02-version.t
+t/Net-9P-Connection/03-new.t
+t/Net-9P-Connection/04-recv.t
+t/Net-9P-Connection/05-client_server.t
 t/Net-9P-Protocol-9P2000/01-use.t
 t/Net-9P-Protocol-9P2000/02-version.t
 t/Net-9P-Protocol-9P2000/03-new.t
@@ -25,6 +31,8 @@ t/Net-9P-Protocol-9P2000/04-decode.t
 t/Net-9P-Protocol-9P2000/05-encode.t
 t/Net-9P/01-use.t
 t/Net-9P/02-version.t
+xt/Net-9P-Connection/01-pod_coverage.t
+xt/Net-9P-Connection/02-pod.t
 xt/Net-9P-Protocol-9P2000/01-pod_coverage.t
 xt/Net-9P-Protocol-9P2000/02-pod.t
 xt/Net-9P/01-pod_coverage.t
