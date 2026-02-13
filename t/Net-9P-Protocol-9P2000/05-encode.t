@@ -5,8 +5,8 @@ use Data::9P::Message::Rerror;
 use Data::9P::Message::Rversion;
 use Data::9P::Message::Tread;
 use Data::9P::Message::Tversion;
-use Data::9P::Message::Twrite;
 use Data::9P::Message::Twalk;
+use Data::9P::Message::Twrite;
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
 use Test::More 'tests' => 7;
@@ -83,26 +83,6 @@ $expected = pack('H*',
 );
 is($ret, $expected, 'Tread encoded correctly.');
 
-# Test./
-$obj = Net::9P::Protocol::9P2000->new;
-$msg = Data::9P::Message::Twrite->new(
-	'data' => 'hello',
-	'fid' => 10,
-	'offset' => 0,
-	'tag' => 4,
-);
-$ret = $obj->encode($msg);
-$expected = pack('H*',
-	'1c000000'.      # size = 28
-	'76'.            # type = 118
-	'0400'.          # tag = 4
-	'0a000000'.      # fid
-	'0000000000000000'.  # offset
-	'05000000'.      # count
-	'68656c6c6f'     # data
-);
-is($ret, $expected, 'Twrite encoded correctly.');
-
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
 $msg = Data::9P::Message::Twalk->new(
@@ -125,3 +105,23 @@ $expected = pack('H*',
 	'706173737764'   # passwd
 );
 is($ret, $expected, 'Twalk encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$msg = Data::9P::Message::Twrite->new(
+	'data' => 'hello',
+	'fid' => 10,
+	'offset' => 0,
+	'tag' => 4,
+);
+$ret = $obj->encode($msg);
+$expected = pack('H*',
+	'1c000000'.      # size = 28
+	'76'.            # type = 118
+	'0400'.          # tag = 4
+	'0a000000'.      # fid
+	'0000000000000000'.  # offset
+	'05000000'.      # count
+	'68656c6c6f'     # data
+);
+is($ret, $expected, 'Twrite encoded correctly.');
