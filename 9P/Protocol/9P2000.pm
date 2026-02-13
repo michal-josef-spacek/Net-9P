@@ -92,13 +92,13 @@ sub decode {
 	my $msg_class = lc((split m/:/ms, $msg_ref)[-1]);
 	my $method = '_decode_'.$msg_class;
 
-	my $msg = $self->$method($tag, $payload);
+	my $msg = $self->$method($payload);
 
-	return $msg;
+	return ($tag, $msg);
 }
 
 sub encode {
-	my ($self, $msg) = @_;
+	my ($self, $tag, $msg) = @_;
 
 	if (! blessed($msg)
 		|| ! $msg->isa('Data::9P::Message')) {
@@ -115,7 +115,7 @@ sub encode {
 	my ($type, $payload) = $self->$method($msg);
 	my $size = 7 + length $payload;
 
-	return pack('V C v', $size, $type, $msg->tag).$payload;
+	return pack('V C v', $size, $type, $tag).$payload;
 }
 
 sub _dec_str {
@@ -136,7 +136,7 @@ sub _dec_str {
 }
 
 sub _decode_rerror {
-	my ($self, $tag, $payload) = @_;
+	my ($self, $payload) = @_;
 
 	my $buf = $payload;
 	my $ename = $self->_dec_str(\$buf);
@@ -145,13 +145,12 @@ sub _decode_rerror {
 	}
 
 	return Data::9P::Message::Rerror->new(
-		'tag' => $tag,
 		'ename' => $ename,
 	);
 }
 
 sub _decode_rversion {
-	my ($self, $tag, $payload) = @_;
+	my ($self, $payload) = @_;
 
 	my $buf = $payload;
 	if (length($buf) < 4) {
@@ -165,13 +164,12 @@ sub _decode_rversion {
 
 	return Data::9P::Message::Rversion->new(
 		'msize' => $msize,
-		'tag' => $tag,
 		'version' => $version,
 	);
 }
 
 sub _decode_tread {
-	my ($self, $tag, $payload) = @_;
+	my ($self, $payload) = @_;
 
 	my $buf = $payload;
 	if (length($buf) < 16) {
@@ -187,12 +185,11 @@ sub _decode_tread {
 		'count' => $count,
 		'fid' => $fid,
 		'offset' => $offset,
-		'tag' => $tag,
 	);
 }
 
 sub _decode_tversion {
-	my ($self, $tag, $payload) = @_;
+	my ($self, $payload) = @_;
 
 	my $buf = $payload;
 	if (length($buf) < 4) {
@@ -206,13 +203,12 @@ sub _decode_tversion {
 
 	return Data::9P::Message::Tversion->new(
 		'msize' => $msize,
-		'tag' => $tag,
 		'version' => $version,
 	);
 }
 
 sub _decode_twalk {
-	my ($self, $tag, $payload) = @_;
+	my ($self, $payload) = @_;
 
 	my $buf = $payload;
 	if (length($buf) < 10) {
@@ -232,13 +228,12 @@ sub _decode_twalk {
 	return Data::9P::Message::Twalk->new(
 		'fid' => $fid,
 		'newfid' => $newfid,
-		'tag' => $tag,
 		'wnames' => \@wnames,
 	);
 }
 
 sub _decode_twrite {
-	my ($self, $tag, $payload) = @_;
+	my ($self, $payload) = @_;
 
 	my $buf = $payload;
 	if (length($buf) < 16) {
@@ -259,7 +254,6 @@ sub _decode_twrite {
 		'data' => $data,
 		'fid' => $fid,
 		'offset' => $offset,
-		'tag' => $tag,
 	);
 }
 

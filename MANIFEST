@@ -23,7 +23,7 @@ t/Net-9P-Connection/01-use.t
 t/Net-9P-Connection/02-version.t
 t/Net-9P-Connection/03-new.t
 t/Net-9P-Connection/04-recv.t
-t/Net-9P-Connection/05-client_server.t
+t/Net-9P-Connection/50-client_server.t
 t/Net-9P-Protocol-9P2000/01-use.t
 t/Net-9P-Protocol-9P2000/02-version.t
 t/Net-9P-Protocol-9P2000/03-new.t

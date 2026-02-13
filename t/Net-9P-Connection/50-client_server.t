@@ -30,14 +30,14 @@ SKIP: {
 		'socket' => $sock2,
 		'protocol' => $proto,
 	);
+	my $tag = 42;
 	my $msg = Data::9P::Message::Rerror->new(
 		'ename' => 'Permission denied',
-		'tag' => 42,
 	);
-	$c1->send($msg);
-	my $recv = $c2->recv;
+	$c1->send($tag, $msg);
+	my ($ret_tag, $recv) = $c2->recv;
 	isa_ok($recv, 'Data::9P::Message::Rerror');
-	is($recv->tag, 42, 'Get tag (42).');
+	is($ret_tag, 42, 'Get tag (42).');
 	is($recv->ename, 'Permission denied', 'Get ename (Permission denied).');
 	$sock1->close;
 	$sock2->close;
@@ -56,13 +56,13 @@ SKIP: {
 		'socket' => $sock2,
 		'protocol' => $proto,
 	);
+	$tag = 42;
 	$msg = Data::9P::Message::Rerror->new(
 		'ename' => 'Permission denied',
-		'tag' => 42,
 	);
-	$c1->send($msg);
+	$c1->send($tag, $msg);
 	$c1->close;
-	$recv = $c2->recv;
+	($ret_tag, $recv) = $c2->recv;
 	eval {
 		$c2->recv;
 	};

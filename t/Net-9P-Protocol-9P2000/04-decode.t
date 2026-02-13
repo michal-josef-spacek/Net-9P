@@ -15,10 +15,10 @@ my $input = pack('H*',
 	'1100'.      # string length = 17
 	'5065726d697373696f6e2064656e696564'
 );
-my $ret = $obj->decode($input);
+my ($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
 isa_ok($ret, 'Data::9P::Message::Rerror');
 is($ret->ename, 'Permission denied', 'Get ename (Permission denied).');
-is($ret->tag, 42, 'Get tag (42).');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
@@ -30,10 +30,10 @@ $input = pack('H*',
 	'0600'.      # string length = 6
 	'395032303030'  # "9P2000"
 );
-$ret = $obj->decode($input);
+($tag, $ret) = $obj->decode($input);
+is($tag, 1, 'Get tag (1).');
 isa_ok($ret, 'Data::9P::Message::Rversion');
 is($ret->msize, 8192, 'Get msize (8192).');
-is($ret->tag, 1, 'Get tag (1).');
 is($ret->version, '9P2000', 'Get version (9P2000).');
 
 # Test.
@@ -46,10 +46,10 @@ $input = pack('H*',
 	'0600'.      # string length = 6
 	'395032303030'
 );
-$ret = $obj->decode($input);
+($tag, $ret) = $obj->decode($input);
+is($tag, 2, 'Get tag (2).');
 isa_ok($ret, 'Data::9P::Message::Tversion');
 is($ret->msize, 8192, 'Get msize (8192).');
-is($ret->tag, 2, 'Get tag (2).');
 is($ret->version, '9P2000', 'Get version (9P2000).');
 
 # Test.
@@ -62,13 +62,13 @@ $input = pack('H*',
 	'8877665544332211'.  # offset
 	'00100000'       # count = 4096
 );
-$ret = $obj->decode($input);
+($tag, $ret) = $obj->decode($input);
+is($tag, 3, 'Get tag (3).');
 isa_ok($ret, 'Data::9P::Message::Tread');
 is($ret->count, 4096, 'Get count (4096).');
 is($ret->fid, 10, 'Get fid (10).');
 is($ret->offset, Math::BigInt->new('0x1122334455667788'),
 	'Get offset (0x1122334455667788).');
-is($ret->tag, 3, 'Get tag (3).');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
@@ -84,11 +84,11 @@ $input = pack('H*',
 	'0600'.          # len("passwd")
 	'706173737764'   # passwd
 );
-$ret = $obj->decode($input);
+($tag, $ret) = $obj->decode($input);
+is($tag, 5, 'Get tag (5).');
 isa_ok($ret, 'Data::9P::Message::Twalk');
 is($ret->fid, 1, 'Get fid (1).');
 is($ret->newfid, 2, 'Get newfid (2).');
-is($ret->tag, 5, 'Get tag (5).');
 is_deeply(
 	$ret->wnames,
 	[
@@ -109,9 +109,9 @@ $input = pack('H*',
 	'05000000'.      # count
 	'68656c6c6f'     # data
 );
-$ret = $obj->decode($input);
+($tag, $ret) = $obj->decode($input);
+is($tag, 4, 'Get tag (4).');
 isa_ok($ret, 'Data::9P::Message::Twrite');
 is($ret->data, 'hello', 'Get data (hello).');
 is($ret->fid, 10, 'Get fid (10).');
 is($ret->offset, 0, 'Get offset (0).');
-is($ret->tag, 4, 'Get tag (4).');

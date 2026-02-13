@@ -23,16 +23,16 @@ SKIP: {
 		'socket' => $sock1,
 		'protocol' => $proto,
 	);
+	my $tag = 42;
 	my $msg = Data::9P::Message::Rerror->new(
 		'ename' => 'Permission denied',
-		'tag' => 42,
 	);
-	my $raw = $proto->encode($msg);
+	my $raw = $proto->encode($tag, $msg);
 	syswrite($sock2, substr($raw, 0, 3));
 	syswrite($sock2, substr($raw, 3));
-	my $recv = $obj->recv;
+	my ($ret_tag, $recv) = $obj->recv;
+	is($ret_tag, 42, 'Get tag (42).');
 	isa_ok($recv, 'Data::9P::Message::Rerror');
-	is($recv->tag, 42, 'Get tag (42).');
 	is($recv->ename, 'Permission denied', 'Get ename (Permission denied).');
 	$sock1->close;
 	$sock2->close;

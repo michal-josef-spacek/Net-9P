@@ -76,18 +76,20 @@ sub recv {
 	my $rest;
 	$self->_read_exact(\$rest, $size - 4);
 
-	return $self->{'protocol'}->decode($hdr.$rest);
+	my ($tag, $msg) = $self->{'protocol'}->decode($hdr.$rest);
+
+	return ($tag, $msg);
 }
 
 sub send {
-	my ($self, $msg) = @_;
+	my ($self, $tag, $msg) = @_;
 
 	$self->_check_open;
 
 	if (! defined $msg) {
 		err 'The message is required.';
 	}
-	my $bytes = $self->{'protocol'}->encode($msg);
+	my $bytes = $self->{'protocol'}->encode($tag, $msg);
 	my $bytes_len = length($bytes);
 	if (! defined $bytes || ! $bytes_len) {
 		err 'Could not encode message.';

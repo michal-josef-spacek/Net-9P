@@ -14,11 +14,11 @@ use Test::NoWarnings;
 
 # Test.
 my $obj = Net::9P::Protocol::9P2000->new;
+my $tag = 42;
 my $msg = Data::9P::Message::Rerror->new(
 	'ename' => 'Permission denied',
-	'tag' => 42,
 );
-my $ret = $obj->encode($msg);
+my $ret = $obj->encode($tag, $msg);
 my $expected = pack('H*',
 	'1a000000'.  # size = 26
 	'6b'.        # type = 107
@@ -30,12 +30,12 @@ is($ret, $expected, 'Rerror encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
+$tag = 1;
 $msg = Data::9P::Message::Rversion->new(
 	'msize' => 8192,
 	'version' => '9P2000',
-	'tag' => 1,
 );
-$ret = $obj->encode($msg);
+$ret = $obj->encode($tag, $msg);
 $expected = pack('H*',
 	'13000000'.  # size = 19
 	'65'.        # type = 101
@@ -48,12 +48,12 @@ is($ret, $expected, 'Rversion encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
+$tag = 2;
 $msg = Data::9P::Message::Tversion->new(
 	'msize' => 8192,
 	'version' => '9P2000',
-	'tag' => 2,
 );
-$ret = $obj->encode($msg);
+$ret = $obj->encode($tag, $msg);
 $expected = pack('H*',
 	'13000000'.  # size = 19
 	'64'.        # type = 100
@@ -66,13 +66,13 @@ is($ret, $expected, 'Tversion encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
+$tag = 3;
 $msg = Data::9P::Message::Tread->new(
 	'count' => 4096,
 	'fid' => 10,
 	'offset' => Math::BigInt->new('0x1122334455667788'),
-	'tag' => 3,
 );
-$ret = $obj->encode($msg);
+$ret = $obj->encode($tag, $msg);
 $expected = pack('H*',
 	'17000000'.      # size = 23
 	'74'.            # type = 116
@@ -85,13 +85,13 @@ is($ret, $expected, 'Tread encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
+$tag = 5;
 $msg = Data::9P::Message::Twalk->new(
 	'fid' => 1,
 	'newfid' => 2,
-	'tag' => 5,
 	'wnames' => ['etc', 'passwd'],
 );
-$ret = $obj->encode($msg);
+$ret = $obj->encode($tag, $msg);
 $expected = pack('H*',
 	'1e000000'.      # size = 30
 	'6e'.            # type = 110
@@ -108,13 +108,13 @@ is($ret, $expected, 'Twalk encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
+$tag = 4;
 $msg = Data::9P::Message::Twrite->new(
 	'data' => 'hello',
 	'fid' => 10,
 	'offset' => 0,
-	'tag' => 4,
 );
-$ret = $obj->encode($msg);
+$ret = $obj->encode($tag, $msg);
 $expected = pack('H*',
 	'1c000000'.      # size = 28
 	'76'.            # type = 118
