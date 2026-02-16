@@ -175,9 +175,9 @@ sub _decode_tread {
 	if (length($buf) < 16) {
 		err 'Payload too short for Tread.';
 	}
-	my ($fid) = unpack('V',  substr($buf, 0, 4, ''));
+	my ($fid) = unpack('V', substr($buf, 0, 4, ''));
 	my ($offset) = unpack('Q<', substr($buf, 0, 8, ''));
-	my ($count) = unpack('V',  substr($buf, 0, 4, ''));
+	my ($count) = unpack('V', substr($buf, 0, 4, ''));
 	if (length($buf)) {
 		err 'Trailing bytes in Tversion.';
 	}
@@ -239,9 +239,9 @@ sub _decode_twrite {
 	if (length($buf) < 16) {
 		err 'Payload too short for Twrite header.';
 	}
-	my ($fid) = unpack('V',  substr($buf, 0, 4, ''));
+	my ($fid) = unpack('V', substr($buf, 0, 4, ''));
 	my ($offset) = unpack('Q<', substr($buf, 0, 8, ''));
-	my ($count) = unpack('V',  substr($buf, 0, 4, ''));
+	my ($count) = unpack('V', substr($buf, 0, 4, ''));
 	if (length($buf) < $count) {
 		err 'Payload too short for Twrite data.';
 	}
@@ -283,7 +283,7 @@ sub _encode_rversion {
 sub _encode_tread {
 	my ($self, $msg) = @_;
 
-	my $payload = pack('V',  $msg->fid).
+	my $payload = pack('V', $msg->fid).
 		pack('Q<', $msg->offset).
 		pack('V', $msg->count);
 
