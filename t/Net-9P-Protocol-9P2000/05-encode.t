@@ -1,15 +1,26 @@
 use strict;
 use warnings;
 
+use Data::9P::Const qw($NOFID $OREAD $OWRITE);
 use Data::9P::Message::Rerror;
 use Data::9P::Message::Rversion;
+use Data::9P::Message::Tauth;
+use Data::9P::Message::Tattach;
+use Data::9P::Message::Tclunk;
+use Data::9P::Message::Tcreate;
+use Data::9P::Message::Tflush;
+use Data::9P::Message::Topen;
 use Data::9P::Message::Tread;
+use Data::9P::Message::Tremove;
 use Data::9P::Message::Tversion;
 use Data::9P::Message::Twalk;
 use Data::9P::Message::Twrite;
+use Data::9P::Message::Twstat;
+use Data::9P::Qid;
+use Data::9P::Stat;
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
-use Test::More 'tests' => 7;
+use Test::More 'tests' => 16;
 use Test::NoWarnings;
 
 # Test.
@@ -48,6 +59,117 @@ is($ret, $expected, 'Rversion encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Tauth->new(
+	'afid' => 1,
+	'aname' => '',
+	'uname' => 'nobody',
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'15000000'.  # size = 21 (7 header + 14 payload)
+	'66'.        # type = 102 (Tauth)
+	'2a00'.      # tag = 42
+	'01000000'.  # afid = 1
+	'0600'.      # uname length = 6
+	'6e6f626f6479'.  # "nobody"
+	'0000'       # aname length = 0
+);
+is($ret, $expected, 'Tauth encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Tattach->new(
+	'afid' => $NOFID,
+	'aname' => '',
+	'fid' => 1,
+	'uname' => 'nobody',
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'19000000'.  # size = 25 (7 header + 18 payload)
+	'68'.        # type = 104 (Tattach)
+	'2a00'.      # tag = 42
+	'01000000'.  # fid = 1
+	'ffffffff'.  # afid = 0xFFFFFFFF (NOFID)
+	'0600'.      # uname length = 6
+	'6e6f626f6479'.  # "nobody"
+	'0000'       # aname length = 0
+);
+is($ret, $expected, 'Tattach encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Tclunk->new(
+	'fid' => 1,
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'0b000000'.  # size = 11 (7 header + 4 payload)
+	'78'.        # type = 120 (Tclunk)
+	'2a00'.      # tag = 42
+	'01000000'   # fid = 1
+);
+is($ret, $expected, 'Tclunk encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Tcreate->new(
+	'fid' => 1,
+	'mode' => $OWRITE,
+	'name' => 'a',
+	'perm' => 0644,
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'13000000'.  # size = 19 (7 header + 12 payload)
+	'72'.        # type = 114 (Tcreate)
+	'2a00'.      # tag = 42
+	'01000000'.  # fid = 1
+	'0100'.      # name length = 1
+	'61'.        # "a"
+	'a4010000'.  # perm = 0644
+	'01'         # mode = 1 (OWRITE)
+);
+is($ret, $expected, 'Tcreate encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Tflush->new(
+	'oldtag' => 7,
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'09000000'.  # size = 9 (7 header + 2 payload)
+	'6c'.        # type = 108 (Tflush)
+	'2a00'.      # tag = 42
+	'0700'       # oldtag = 7
+);
+is($ret, $expected, 'Tflush encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Topen->new(
+	'fid' => 1,
+	'mode' => $OREAD,
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'0c000000'.  # size = 12 (7 header + 5 payload)
+	'70'.        # type = 112 (Topen)
+	'2a00'.      # tag = 42
+	'01000000'.  # fid = 1
+	'00'         # mode = 0 (OREAD)
+);
+is($ret, $expected, 'Topen encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
 $tag = 3;
 $msg = Data::9P::Message::Tread->new(
 	'count' => 4096,
@@ -64,6 +186,36 @@ $expected = pack('H*',
 	'00100000'       # count = 4096
 );
 is($ret, $expected, 'Tread encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Tremove->new(
+	'fid' => 1,
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'0b000000'.  # size = 11 (7 header + 4 payload)
+	'7a'.        # type = 122 (Tremove)
+	'2a00'.      # tag = 42
+	'01000000'   # fid = 1
+);
+is($ret, $expected, 'Tremove encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Tstat->new(
+	'fid' => 1,
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'0b000000'.  # size = 11 (7 header + 4 payload)
+	'7c'.        # type = 124 (Tstat)
+	'2a00'.      # tag = 42
+	'01000000'   # fid = 1
+);
+is($ret, $expected, 'Tstat encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
@@ -125,3 +277,59 @@ $expected = pack('H*',
 	'68656c6c6f'     # data
 );
 is($ret, $expected, 'Twrite encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Twstat->new(
+	'fid' => 1,
+	'stat' => Data::9P::Stat->new(
+		'atime' => 0,
+		'dev' => 0,
+		'gid' => 'g',
+		'length' => 0,
+		'mode' => 0644,
+		'mtime' => 0,
+		'muid' => 'm',
+		'name' => 'a',
+		'qid' => Data::9P::Qid->new(
+			'path' => 1,
+			'type' => 0,
+			'version' => 0,
+		),
+		'type' => 0,
+		'uid' => 'u',
+	),
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'42000000'.  # size = 66 (7 header + 59 payload)
+	'7e'.        # type = 126 (Twstat)
+	'2a00'.      # tag = 42
+
+	'01000000'.  # fid = 1
+
+	'3500'.      # stat[n] length = 53 bytes (0x35)
+
+	# --- stat blob (53 bytes) ---
+	'3300'.      # stat.size = 51 bytes follow (0x33)  [= bloblen-2]
+	'0000'.      # stat.type (legacy) = 0
+	'00000000'.  # stat.dev = 0
+
+	# qid (13 bytes)
+	'00'.        # qid.type = 0
+	'00000000'.  # qid.version = 0
+	'0100000000000000'. # qid.path = 1 (u64 LE)
+
+	'a4010000'.  # mode = 0644 (0x000001a4) LE
+	'00000000'.  # atime = 0
+	'00000000'.  # mtime = 0
+	'0000000000000000'. # length = 0 (u64 LE)
+
+	# name, uid, gid, muid (each: u16 len + bytes)
+	'0100'. '61'.  # name = "a"
+	'0100'. '75'.  # uid  = "u"
+	'0100'. '67'.  # gid  = "g"
+	'0100'. '6d'   # muid = "m"
+);
+is($ret, $expected, 'Twstat encoded correctly.');
