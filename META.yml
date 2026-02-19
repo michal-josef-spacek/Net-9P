@@ -35,14 +35,38 @@ no_index:
     - xt
 requires:
   Class::Utils: 0
+  Data::9P::Const: 0
+  Data::9P::Message::Rattach: 0
+  Data::9P::Message::Rauth: 0
+  Data::9P::Message::Rclunk: 0
+  Data::9P::Message::Rcreate: 0
   Data::9P::Message::Rerror: 0
+  Data::9P::Message::Rflush: 0
+  Data::9P::Message::Ropen: 0
+  Data::9P::Message::Rremove: 0
+  Data::9P::Message::Rstat: 0
   Data::9P::Message::Rversion: 0
+  Data::9P::Message::Rwalk: 0
+  Data::9P::Message::Rwrite: 0
+  Data::9P::Message::Rwstat: 0
+  Data::9P::Message::Tattach: 0
+  Data::9P::Message::Tauth: 0
+  Data::9P::Message::Tclunk: 0
+  Data::9P::Message::Tcreate: 0
+  Data::9P::Message::Tflush: 0
+  Data::9P::Message::Topen: 0
   Data::9P::Message::Tread: 0
+  Data::9P::Message::Tremove: 0
+  Data::9P::Message::Tstat: 0
   Data::9P::Message::Tversion: 0
   Data::9P::Message::Twalk: 0
   Data::9P::Message::Twrite: 0
+  Data::9P::Message::Twstat: 0
+  Data::9P::Qid: 0
+  Data::9P::Stat: 0
   English: 0
   Error::Pure: 0
+  Math::BigInt: 0
   Mo::utils: 0.08
   Readonly: 0
   Scalar::Util: 0
