@@ -20,7 +20,7 @@ use Data::9P::Qid;
 use Data::9P::Stat;
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
-use Test::More 'tests' => 16;
+use Test::More 'tests' => 17;
 use Test::NoWarnings;
 
 # Test.
@@ -234,6 +234,24 @@ $expected = pack('H*',
 	'395032303030'
 );
 is($ret, $expected, 'Tversion encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 0xFFFF;
+$msg = Data::9P::Message::Tversion->new(
+	'msize' => 8192,
+	'version' => '9P2000',
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'13000000'.  # size = 19
+	'64'.        # type = 100
+	'FFFF'.      # tag = 0xFFFF (NOTAG)
+	'00200000'.  # msize = 8192
+	'0600'.      # string length = 6
+	'395032303030'
+);
+is($ret, $expected, 'Tversion encoded correctly (with NOTAG).');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;

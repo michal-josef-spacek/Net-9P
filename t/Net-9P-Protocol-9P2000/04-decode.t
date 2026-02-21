@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-use Data::9P::Const qw($NOFID $OREAD $OWRITE);
+use Data::9P::Const qw($NOFID $NOTAG $OREAD $OWRITE);
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
-use Test::More 'tests' => 78;
+use Test::More 'tests' => 82;
 use Test::NoWarnings;
 
 # Test.
@@ -192,6 +192,22 @@ $input = pack('H*',
 );
 ($tag, $ret) = $obj->decode($input);
 is($tag, 2, 'Get tag (2).');
+isa_ok($ret, 'Data::9P::Message::Tversion');
+is($ret->msize, 8192, 'Get msize (8192).');
+is($ret->version, '9P2000', 'Get version (9P2000).');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'13000000'.  # size = 19
+	'64'.        # type = 100
+	'FFFF'.      # tag = 0xFFFF - NOTAG
+	'00200000'.  # msize = 8192
+	'0600'.      # string length = 6
+	'395032303030'
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, $NOTAG, 'Get tag ('.$NOTAG.').');
 isa_ok($ret, 'Data::9P::Message::Tversion');
 is($ret->msize, 8192, 'Get msize (8192).');
 is($ret->version, '9P2000', 'Get version (9P2000).');
