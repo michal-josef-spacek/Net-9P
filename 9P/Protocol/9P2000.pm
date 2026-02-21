@@ -574,7 +574,7 @@ sub _decode_tread {
 	my ($offset) = unpack('Q<', substr($buf, 0, 8, ''));
 	my ($count) = unpack('V', substr($buf, 0, 4, ''));
 	if (length($buf)) {
-		err 'Trailing bytes in Tversion.';
+		err 'Trailing bytes in Tread.';
 	}
 	return Data::9P::Message::Tread->new(
 		'count' => $count,
