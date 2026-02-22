@@ -3,6 +3,7 @@ TODO
 1. Doc.
 2. Test errors in encoding/decoding of 9P2000.
 3. Add trace/debug support for 9P2000.
+Debug abstract and simple class?
 4. max_size logic to Connection.
 5.
 
