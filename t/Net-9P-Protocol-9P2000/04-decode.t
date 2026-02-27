@@ -75,7 +75,7 @@ is($ret->iounit, 8192, 'Get iounit (8192).');
 $obj = Net::9P::Protocol::9P2000->new;
 $input = pack('H*',
 	'1a000000'.  # size = 26
-	'6b'.        # type = 107
+	'6b'.        # type = 107 (Rerror)
 	'2a00'.      # tag = 42
 	'1100'.      # string length = 17
 	'5065726d697373696f6e2064656e696564'
@@ -89,7 +89,7 @@ is($ret->ename, 'Permission denied', 'Get ename (Permission denied).');
 $obj = Net::9P::Protocol::9P2000->new;
 $input = pack('H*',
 	'13000000'.  # size = 19
-	'65'.        # type = 101
+	'65'.        # type = 101 (Rversion)
 	'0100'.      # tag = 1
 	'00200000'.  # msize = 8192
 	'0600'.      # string length = 6
@@ -206,7 +206,7 @@ is($ret->mode, $OREAD, 'Get mode (OREAD=0).');
 $obj = Net::9P::Protocol::9P2000->new;
 $input = pack('H*',
 	'17000000'.      # size = 23
-	'74'.            # type = 116
+	'74'.            # type = 116 (Tread)
 	'0300'.          # tag = 3
 	'0a000000'.      # fid = 10
 	'8877665544332211'.  # offset
@@ -250,7 +250,7 @@ is($ret->fid, 1, 'Get fid (1).');
 $obj = Net::9P::Protocol::9P2000->new;
 $input = pack('H*',
 	'13000000'.  # size = 19
-	'64'.        # type = 100
+	'64'.        # type = 100 (Tversion)
 	'0200'.      # tag = 2
 	'00200000'.  # msize = 8192
 	'0600'.      # string length = 6
@@ -266,7 +266,7 @@ is($ret->version, '9P2000', 'Get version (9P2000).');
 $obj = Net::9P::Protocol::9P2000->new;
 $input = pack('H*',
 	'13000000'.  # size = 19
-	'64'.        # type = 100
+	'64'.        # type = 100 (Tversion)
 	'FFFF'.      # tag = 0xFFFF - NOTAG
 	'00200000'.  # msize = 8192
 	'0600'.      # string length = 6
@@ -282,7 +282,7 @@ is($ret->version, '9P2000', 'Get version (9P2000).');
 $obj = Net::9P::Protocol::9P2000->new;
 $input = pack('H*',
 	'1e000000'.      # size = 30
-	'6e'.            # type = 110
+	'6e'.            # type = 110 (Twalk)
 	'0500'.          # tag
 	'01000000'.      # fid
 	'02000000'.      # newfid
@@ -310,7 +310,7 @@ is_deeply(
 $obj = Net::9P::Protocol::9P2000->new;
 $input = pack('H*',
 	'1c000000'.      # size = 28
-	'76'.            # type = 118
+	'76'.            # type = 118 (Twrite)
 	'0400'.          # tag = 4
 	'0a000000'.      # fid
 	'0000000000000000'.  # offset
