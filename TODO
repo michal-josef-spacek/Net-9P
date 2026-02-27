@@ -5,7 +5,7 @@ TODO
 3. Add trace/debug support for 9P2000.
 Debug abstract and simple class?
 4. max_size logic to Connection.
-5. Rewrite is for byte oriented comparision to something different.
+5. Rewrite is() for byte oriented comparision to something different.
 6.
 
 Applied
