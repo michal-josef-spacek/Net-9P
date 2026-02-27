@@ -53,9 +53,9 @@ $obj = Net::9P::Protocol::9P2000->new;
 $tag = 42;
 $msg = Data::9P::Message::Rauth->new(
 	'aqid' => Data::9P::Qid->new(
+		'path' => 2,
 		'type' => 0x80,
 		'version' => 1,
-		'path' => 2,
 	),
 );
 $ret = $obj->encode($tag, $msg);
@@ -86,9 +86,9 @@ $obj = Net::9P::Protocol::9P2000->new;
 $tag = 42;
 $msg = Data::9P::Message::Rcreate->new(
 	'qid' => Data::9P::Qid->new(
+		'path' => 3,
 		'type' => 0x00,
 		'version' => 0,
-		'path' => 3,
 	),
 	'iounit' => 8192,
 );
