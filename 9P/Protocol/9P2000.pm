@@ -365,7 +365,7 @@ sub _decode_rstat {
 	if (length($buf)) {
 		err 'Trailing bytes in Rstat.';
 	}
-	my $stat = $self->_dec_stat($stat_blob);
+	my $stat = $self->_dec_stat(\$stat_blob);
 
 	return Data::9P::Message::Rstat->new(
 		'stat' => $stat,
