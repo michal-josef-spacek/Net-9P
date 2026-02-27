@@ -2,6 +2,10 @@ use strict;
 use warnings;
 
 use Data::9P::Const qw($NOFID $OREAD $OWRITE);
+use Data::9P::Message::Rattach;
+use Data::9P::Message::Rauth;
+use Data::9P::Message::Rclunk;
+use Data::9P::Message::Rcreate;
 use Data::9P::Message::Rerror;
 use Data::9P::Message::Rversion;
 use Data::9P::Message::Tauth;
@@ -20,17 +24,94 @@ use Data::9P::Qid;
 use Data::9P::Stat;
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
-use Test::More 'tests' => 17;
+use Test::More 'tests' => 21;
 use Test::NoWarnings;
 
 # Test.
 my $obj = Net::9P::Protocol::9P2000->new;
 my $tag = 42;
-my $msg = Data::9P::Message::Rerror->new(
-	'ename' => 'Permission denied',
+my $msg = Data::9P::Message::Rattach->new(
+	'qid' => Data::9P::Qid->new(
+		'type' => 0x00,
+		'version' => 0,
+		'path' => 1,
+	),
 );
 my $ret = $obj->encode($tag, $msg);
 my $expected = pack('H*',
+	'14000000'.  # size = 20
+	'69'.        # type = 105 (Rattach)
+	'2a00'.      # tag = 42
+	'00'.        # qid.type = 0x00
+	'00000000'.  # qid.version = 0
+	'0100000000000000'  # qid.path = 1
+);
+is($ret, $expected, 'Rattach encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rauth->new(
+	'aqid' => Data::9P::Qid->new(
+		'type' => 0x80,
+		'version' => 1,
+		'path' => 2,
+	),
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'14000000'.  # size = 20
+	'67'.        # type = 103 (Rauth)
+	'2a00'.      # tag = 42
+	'80'.        # qid.type = 0x80
+	'01000000'.  # qid.version = 1
+	'0200000000000000'  # qid.path = 2
+);
+is($ret, $expected, 'Rauth encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rclunk->new;
+$expected = pack('H*',
+	'07000000'.  # size = 7
+	'79'.        # type = 121 (Rclunk)
+	'2a00'       # tag = 42
+);
+$ret = $obj->encode($tag, $msg);
+is($ret, $expected, 'Rclunk encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rcreate->new(
+	'qid' => Data::9P::Qid->new(
+		'type' => 0x00,
+		'version' => 0,
+		'path' => 3,
+	),
+	'iounit' => 8192,
+);
+$expected = pack('H*',
+	'18000000'.  # size = 24
+	'73'.        # type = 115 (Rcreate)
+	'2a00'.      # tag = 42
+	'00'.        # qid.type = 0x00
+	'00000000'.  # qid.version = 0
+	'0300000000000000'. # qid.path = 3
+	'00200000'   # iounit = 8192 (little-endian)
+);
+$ret = $obj->encode($tag, $msg);
+is($ret, $expected, 'Rcreate encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rerror->new(
+	'ename' => 'Permission denied',
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
 	'1a000000'.  # size = 26
 	'6b'.        # type = 107
 	'2a00'.      # tag = 42
