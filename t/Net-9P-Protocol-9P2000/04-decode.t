@@ -102,22 +102,6 @@ is($ret->msize, 8192, 'Get msize (8192).');
 is($ret->version, '9P2000', 'Get version (9P2000).');
 
 # Test.
-$obj = Net::9P::Protocol::9P2000->new;
-$input = pack('H*',
-	'15000000'.  # size = 21 (7 header + 14 payload)
-	'66'.        # type = 102 (Tauth)
-	'2a00'.      # tag = 42
-	'01000000'.  # afid = 1
-	'0600'.      # uname length = 6
-	'6e6f626f6479'.  # "nobody"
-	'0000'       # aname length = 0
-);
-($tag, $ret) = $obj->decode($input);
-is($tag, 42, 'Get tag (42).');
-isa_ok($ret, 'Data::9P::Message::Tauth');
-is($ret->afid, 1, 'Get afid (1).');
-is($ret->uname, 'nobody', 'Get uname (nobody).');
-is($ret->aname, '', 'Get aname (empty).');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
@@ -136,6 +120,24 @@ is($tag, 42, 'Get tag (42).');
 isa_ok($ret, 'Data::9P::Message::Tattach');
 is($ret->fid, 1, 'Get fid (1).');
 is($ret->afid, $NOFID, 'Get afid (NOFID).');
+is($ret->uname, 'nobody', 'Get uname (nobody).');
+is($ret->aname, '', 'Get aname (empty).');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'15000000'.  # size = 21 (7 header + 14 payload)
+	'66'.        # type = 102 (Tauth)
+	'2a00'.      # tag = 42
+	'01000000'.  # afid = 1
+	'0600'.      # uname length = 6
+	'6e6f626f6479'.  # "nobody"
+	'0000'       # aname length = 0
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Tauth');
+is($ret->afid, 1, 'Get afid (1).');
 is($ret->uname, 'nobody', 'Get uname (nobody).');
 is($ret->aname, '', 'Get aname (empty).');
 

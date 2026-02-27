@@ -8,8 +8,8 @@ use Data::9P::Message::Rclunk;
 use Data::9P::Message::Rcreate;
 use Data::9P::Message::Rerror;
 use Data::9P::Message::Rversion;
-use Data::9P::Message::Tauth;
 use Data::9P::Message::Tattach;
+use Data::9P::Message::Tauth;
 use Data::9P::Message::Tclunk;
 use Data::9P::Message::Tcreate;
 use Data::9P::Message::Tflush;
@@ -141,26 +141,6 @@ is($ret, $expected, 'Rversion encoded correctly.');
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
 $tag = 42;
-$msg = Data::9P::Message::Tauth->new(
-	'afid' => 1,
-	'aname' => '',
-	'uname' => 'nobody',
-);
-$ret = $obj->encode($tag, $msg);
-$expected = pack('H*',
-	'15000000'.  # size = 21 (7 header + 14 payload)
-	'66'.        # type = 102 (Tauth)
-	'2a00'.      # tag = 42
-	'01000000'.  # afid = 1
-	'0600'.      # uname length = 6
-	'6e6f626f6479'.  # "nobody"
-	'0000'       # aname length = 0
-);
-is($ret, $expected, 'Tauth encoded correctly.');
-
-# Test.
-$obj = Net::9P::Protocol::9P2000->new;
-$tag = 42;
 $msg = Data::9P::Message::Tattach->new(
 	'afid' => $NOFID,
 	'aname' => '',
@@ -179,6 +159,26 @@ $expected = pack('H*',
 	'0000'       # aname length = 0
 );
 is($ret, $expected, 'Tattach encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Tauth->new(
+	'afid' => 1,
+	'aname' => '',
+	'uname' => 'nobody',
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'15000000'.  # size = 21 (7 header + 14 payload)
+	'66'.        # type = 102 (Tauth)
+	'2a00'.      # tag = 42
+	'01000000'.  # afid = 1
+	'0600'.      # uname length = 6
+	'6e6f626f6479'.  # "nobody"
+	'0000'       # aname length = 0
+);
+is($ret, $expected, 'Tauth encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
