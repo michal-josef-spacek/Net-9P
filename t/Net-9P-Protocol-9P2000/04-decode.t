@@ -4,7 +4,7 @@ use warnings;
 use Data::9P::Const qw($NOFID $NOTAG $OREAD $OWRITE);
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
-use Test::More 'tests' => 138;
+use Test::More 'tests' => 141;
 use Test::NoWarnings;
 
 # Test.
@@ -114,6 +114,20 @@ is($ret->qid->type, 0x00, 'Get qid.type (0x00).');
 is($ret->qid->version, 1, 'Get qid.version (1).');
 is($ret->qid->path, 4, 'Get qid.path (4).');
 is($ret->iounit, 4096, 'Get iounit (4096).');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'10000000'.  # size = 16 (4+1+2+4+5)
+	'75'.        # type = 117 (Rread)
+	'2a00'.      # tag = 42
+	'05000000'.  # data_len = 5
+	'68656c6c6f' # data = "hello"
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Rread');
+is($ret->data, 'hello', 'Get data (hello).');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;

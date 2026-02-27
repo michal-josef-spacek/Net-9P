@@ -9,6 +9,7 @@ use Data::9P::Message::Rcreate;
 use Data::9P::Message::Rerror;
 use Data::9P::Message::Rflush;
 use Data::9P::Message::Ropen;
+use Data::9P::Message::Rread;
 use Data::9P::Message::Rremove;
 use Data::9P::Message::Rstat;
 use Data::9P::Message::Rversion;
@@ -31,7 +32,7 @@ use Data::9P::Qid;
 use Data::9P::Stat;
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
-use Test::More 'tests' => 28;
+use Test::More 'tests' => 29;
 use Test::NoWarnings;
 
 # Test.
@@ -161,6 +162,22 @@ $expected = pack('H*',
 	'00100000'   # iounit = 4096
 );
 is($ret, $expected, 'Ropen encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rread->new(
+	'data' => 'hello',
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'10000000'.  # size = 16 (4+1+2+4+5)
+	'75'.        # type = 117 (Rread)
+	'2a00'.      # tag = 42
+	'05000000'.  # data_len = 5
+	'68656c6c6f' # data = "hello"
+);
+is($ret, $expected, 'Rread encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
