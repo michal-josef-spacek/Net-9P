@@ -4,7 +4,7 @@ use warnings;
 use Data::9P::Const qw($NOFID $NOTAG $OREAD $OWRITE);
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
-use Test::More 'tests' => 100;
+use Test::More 'tests' => 138;
 use Test::NoWarnings;
 
 # Test.
@@ -88,6 +88,87 @@ is($ret->ename, 'Permission denied', 'Get ename (Permission denied).');
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
 $input = pack('H*',
+	'07000000'.  # size = 7
+	'6d'.        # type = 109 (Rflush)
+	'2a00'       # tag = 42
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Rflush');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'18000000'.  # size = 24
+	'71'.        # type = 113 (Ropen)
+	'2a00'.      # tag = 42
+	'00'.        # qid.type = 0x00
+	'01000000'.  # qid.version = 1
+	'0400000000000000'. # qid.path = 4
+	'00100000'   # iounit = 4096
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Ropen');
+is($ret->qid->type, 0x00, 'Get qid.type (0x00).');
+is($ret->qid->version, 1, 'Get qid.version (1).');
+is($ret->qid->path, 4, 'Get qid.path (4).');
+is($ret->iounit, 4096, 'Get iounit (4096).');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'07000000'.  # size = 7
+	'7b'.        # type = 123 (Rremove)
+	'2a00'       # tag = 42
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Rremove');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'3a000000'.  # size = 58
+	'7d'.        # type = 125 (Rstat)
+	'2a00'.      # tag = 42
+	'3100'.      # statlen = 49
+
+	# stat block (49 bytes total):
+	'2f00'.      # inner size = 47
+	'0000'.      # type (u16)
+	'00000000'.  # dev  (u32)
+	'00'.        # qid.type
+	'00000000'.  # qid.version
+	'0100000000000000'. # qid.path = 1
+	'ff010000'.  # mode = 511 (0x1ff)
+	'01000000'.  # atime = 1
+	'02000000'.  # mtime = 2
+	'0000000000000000'. # length = 0
+	'0000'.      # name = ""
+	'0000'.      # uid  = ""
+	'0000'.      # gid  = ""
+	'0000'       # muid = ""
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Rstat');
+is($ret->stat->qid->type, 0, 'Get stat.type (0).');
+is($ret->stat->qid->version, 0, 'Get stat.version (0).');
+is($ret->stat->qid->path, 1, 'Get stat.qid.path (1).');
+is($ret->stat->mode, 511, 'Get stat.mode (511).');
+is($ret->stat->name, '', 'Get stat.name ("").');
+is($ret->stat->uid, '', 'Get stat.uid ("").');
+is($ret->stat->muid, '', 'Get stat.muid ("").');
+is($ret->stat->gid, '', 'Get stat.gid ("").');
+is($ret->stat->atime, 1, 'Get stat.atime (1).');
+is($ret->stat->mtime, 2, 'Get stat.mtime (2).');
+is($ret->stat->type, 0, 'Get stat.type (0).');
+is($ret->stat->dev, 0, 'Get stat.dev (0).');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
 	'13000000'.  # size = 19
 	'65'.        # type = 101 (Rversion)
 	'0100'.      # tag = 1
@@ -102,6 +183,57 @@ is($ret->msize, 8192, 'Get msize (8192).');
 is($ret->version, '9P2000', 'Get version (9P2000).');
 
 # Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'23000000'.  # size = 35
+	'6f'.        # type = 111 (Rwalk)
+	'2a00'.      # tag = 42
+	'0200'.      # nwqid = 2
+
+	# qid[0]
+	'00'.        # qid.type = 0x00
+	'01000000'.  # qid.version = 1
+	'0100000000000000'. # qid.path = 1
+
+	# qid[1]
+	'80'.        # qid.type = 0x80
+	'02000000'.  # qid.version = 2
+	'0200000000000000'  # qid.path = 2
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Rwalk');
+is(scalar(@{$ret->wqid}), 2, 'Get nwqid (2).');
+is($ret->wqid->[0]->type, 0x00, 'Get wqid[0].type (0x00).');
+is($ret->wqid->[0]->version, 1, 'Get wqid[0].version (1).');
+is($ret->wqid->[0]->path, 1, 'Get wqid[0].path (1).');
+is($ret->wqid->[1]->type, 0x80, 'Get wqid[1].type (0x80).');
+is($ret->wqid->[1]->version, 2, 'Get wqid[1].version (2).');
+is($ret->wqid->[1]->path, 2, 'Get wqid[1].path (2).');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'0b000000'.  # size = 11
+	'77'.        # type = 119 (Rwrite)
+	'2a00'.      # tag = 42
+	'05000000'   # count = 5
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Rwrite');
+is($ret->count, 5, 'Get count (5).');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$input = pack('H*',
+	'07000000'.  # size = 7
+	'7f'.        # type = 127 (Rwstat)
+	'2a00'       # tag = 42
+);
+($tag, $ret) = $obj->decode($input);
+is($tag, 42, 'Get tag (42).');
+isa_ok($ret, 'Data::9P::Message::Rwstat');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;

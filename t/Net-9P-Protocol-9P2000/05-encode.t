@@ -7,7 +7,14 @@ use Data::9P::Message::Rauth;
 use Data::9P::Message::Rclunk;
 use Data::9P::Message::Rcreate;
 use Data::9P::Message::Rerror;
+use Data::9P::Message::Rflush;
+use Data::9P::Message::Ropen;
+use Data::9P::Message::Rremove;
+use Data::9P::Message::Rstat;
 use Data::9P::Message::Rversion;
+use Data::9P::Message::Rwalk;
+use Data::9P::Message::Rwrite;
+use Data::9P::Message::Rwstat;
 use Data::9P::Message::Tattach;
 use Data::9P::Message::Tauth;
 use Data::9P::Message::Tclunk;
@@ -24,7 +31,7 @@ use Data::9P::Qid;
 use Data::9P::Stat;
 use Math::BigInt;
 use Net::9P::Protocol::9P2000;
-use Test::More 'tests' => 21;
+use Test::More 'tests' => 28;
 use Test::NoWarnings;
 
 # Test.
@@ -122,6 +129,100 @@ is($ret, $expected, 'Rerror encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rflush->new;
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'07000000'.  # size = 7
+	'6d'.        # type = 109 (Rflush)
+	'2a00'       # tag = 42
+);
+is($ret, $expected, 'Rflush encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Ropen->new(
+	'qid' => Data::9P::Qid->new(
+		'path' => 4,
+		'type' => 0x00,
+		'version' => 1,
+	),
+	'iounit' => 4096,
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'18000000'.  # size = 24
+	'71'.        # type = 113 (Ropen)
+	'2a00'.      # tag = 42
+	'00'.        # qid.type = 0x00
+	'01000000'.  # qid.version = 1
+	'0400000000000000'. # qid.path = 4
+	'00100000'   # iounit = 4096
+);
+is($ret, $expected, 'Ropen encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rremove->new;
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'07000000'.  # size = 7
+	'7b'.        # type = 123 (Rremove)
+	'2a00'       # tag = 42
+);
+is($ret, $expected, 'Rremove encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rstat->new(
+	'stat' => Data::9P::Stat->new(
+		'atime' => 1,
+		'dev' => 0,
+		'gid' => '',
+		'length' => 0,
+		'mode' => 0x1ff,
+		'mtime' => 2,
+		'muid' => '',
+		'name' => '',
+		'qid' => Data::9P::Qid->new(
+			'path' => 1,
+			'version' => 0,
+			'type' => 0x00,
+		),
+		'uid' => '',
+		'type' => 0,
+	),
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'3a000000'.  # size = 58
+	'7d'.        # type = 125 (Rstat)
+	'2a00'.      # tag = 42
+	'3100'.      # statlen = 49
+
+	# stat block (49 bytes total):
+	'2f00'.      # inner size = 47
+	'0000'.      # type (u16)
+	'00000000'.  # dev  (u32)
+	'00'.        # qid.type
+	'00000000'.  # qid.version
+	'0100000000000000'. # qid.path = 1
+	'ff010000'.  # mode = 511 (0x1ff)
+	'01000000'.  # atime = 1
+	'02000000'.  # mtime = 2
+	'0000000000000000'. # length = 0
+	'0000'.      # name = ""
+	'0000'.      # uid  = ""
+	'0000'.      # gid  = ""
+	'0000'       # muid = ""
+);
+is($ret, $expected, 'Rstat encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
 $tag = 1;
 $msg = Data::9P::Message::Rversion->new(
 	'msize' => 8192,
@@ -137,6 +238,69 @@ $expected = pack('H*',
 	'395032303030'  # "9P2000"
 );
 is($ret, $expected, 'Rversion encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rwalk->new(
+	'wqid' => [
+		Data::9P::Qid->new(
+			'path' => 1,
+			'version' => 1,
+			'type' => 0x00,
+		),
+		Data::9P::Qid->new(
+			'path' => 2,
+			'version' => 2,
+			'type' => 0x80,
+		),
+	],
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'23000000'.  # size = 35
+	'6f'.        # type = 111 (Rwalk)
+	'2a00'.      # tag = 42
+	'0200'.      # nwqid = 2
+
+	# qid[0]
+	'00'.        # qid.type = 0x00
+	'01000000'.  # qid.version = 1
+	'0100000000000000'. # qid.path = 1
+
+	# qid[1]
+	'80'.        # qid.type = 0x80
+	'02000000'.  # qid.version = 2
+	'0200000000000000'  # qid.path = 2
+);
+is($ret, $expected, 'Rwalk encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rwrite->new(
+	'count' => 5,
+);
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'0b000000'.  # size = 11
+	'77'.        # type = 119 (Rwrite)
+	'2a00'.      # tag = 42
+	'05000000'   # count = 5
+);
+is($ret, $expected, 'Rwrite encoded correctly.');
+
+# Test.
+$obj = Net::9P::Protocol::9P2000->new;
+$tag = 42;
+$msg = Data::9P::Message::Rwstat->new;
+$ret = $obj->encode($tag, $msg);
+$expected = pack('H*',
+	'07000000'.  # size = 7
+	'7f'.        # type = 127 (Rwstat)
+	'2a00'       # tag = 42
+);
+is($ret, $expected, 'Rwstat encoded correctly.');
 
 # Test.
 $obj = Net::9P::Protocol::9P2000->new;
