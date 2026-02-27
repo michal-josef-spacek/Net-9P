@@ -11,6 +11,7 @@ use Data::9P::Message::Rcreate;
 use Data::9P::Message::Rerror;
 use Data::9P::Message::Rflush;
 use Data::9P::Message::Ropen;
+use Data::9P::Message::Rread;
 use Data::9P::Message::Rremove;
 use Data::9P::Message::Rstat;
 use Data::9P::Message::Rversion;
